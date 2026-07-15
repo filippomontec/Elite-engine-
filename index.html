@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08090b">
+<title>Elite Creator Engine — Cloud Render MVP</title>
+<style>
+:root{
+ --bg:#08090b;--panel:#111319;--panel2:#181b21;--line:#2b3038;
+ --text:#f4f2ed;--muted:#9298a2;--gold:#d6bc88;--ok:#98b398;--bad:#c78d8d
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 100% 0,rgba(214,188,136,.1),transparent 28%),var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select{font:inherit}
+.app{min-height:100vh;display:grid;grid-template-columns:220px 1fr}
+aside{padding:26px 20px;border-right:1px solid var(--line);background:#07080a;position:relative}
+.logo{font-size:14px;letter-spacing:.44em;font-weight:800}.sub{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:7px}
+.nav{margin-top:38px}.nav div{padding:12px;border-radius:11px;color:var(--muted);font-size:12px;margin-bottom:8px}.nav .active{background:var(--panel2);border:1px solid var(--line);color:var(--text)}
+.version{position:absolute;bottom:22px;font-size:9px;color:#626873;line-height:1.5}
+main{padding:28px 30px 50px;max-width:1500px;width:100%;margin:auto}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:22px}
+h1{font-size:27px;letter-spacing:-.035em;margin:0}.top p{margin:7px 0 0;color:var(--muted);font-size:12px}
+.pill{font-size:10px;color:var(--muted);border:1px solid var(--line);padding:8px 11px;border-radius:999px;white-space:nowrap}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px}
+.grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(350px,.92fr);gap:18px}
+.card{border:1px solid var(--line);border-radius:19px;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.008));padding:19px}
+.card h2{font-size:14px;margin:0 0 5px}.card p{font-size:11px;line-height:1.5;color:var(--muted);margin:0}
+.label{display:block;margin:17px 0 8px;color:#c9ccd1;font-size:9px;letter-spacing:.12em;text-transform:uppercase}
+.settings{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.field{display:grid;gap:5px}.field span{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.field input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;background:var(--panel2);color:var(--text);font-size:11px}
+.upload{border:1px dashed #434a55;border-radius:16px;min-height:125px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin-top:14px;cursor:pointer;background:rgba(255,255,255,.012)}
+.upload .plus{font-size:30px;margin-bottom:6px}.upload b{font-size:12px}.upload small{font-size:9px;color:var(--muted);margin-top:6px}input[type=file]{display:none}
+.options{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.option{border:1px solid var(--line);background:var(--panel2);border-radius:11px;padding:11px;cursor:pointer}.option.selected{border-color:var(--gold);background:rgba(214,188,136,.06)}.option strong{font-size:11px;display:block}.option small{font-size:9px;color:var(--muted);display:block;margin-top:3px}
+.btn{border:0;border-radius:12px;padding:13px;background:var(--gold);color:#17130d;font-weight:800;font-size:12px;cursor:pointer;width:100%}.btn.secondary{background:transparent;color:var(--text);border:1px solid var(--line)}.btn:disabled{opacity:.4}.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.cliplist,.timeline{display:grid;gap:8px;margin-top:12px}
+.clip{display:grid;grid-template-columns:58px 1fr;gap:10px;padding:9px;background:var(--panel2);border:1px solid var(--line);border-radius:12px}
+.thumb{width:58px;height:76px;border-radius:8px;background:#222;object-fit:cover;filter:brightness(.82) contrast(1.28) saturate(.62) sepia(.1)}
+.clip b{font-size:10px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clip small{font-size:8px;color:var(--muted);display:block;margin:3px 0 7px}.clip select{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px;background:#101217;color:var(--text);font-size:10px}
+.progressWrap{margin-top:14px;border-top:1px solid var(--line);padding-top:13px}.progressRow{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-bottom:7px}.bar{height:5px;background:#242830;border-radius:99px;overflow:hidden}.bar>div{height:100%;width:0;background:var(--gold);transition:width .25s}
+.phoneWrap{display:flex;justify-content:center;margin-top:15px}.phone{width:min(250px,68vw);aspect-ratio:9/16;border-radius:28px;border:1px solid #454b55;background:#050608;overflow:hidden;position:relative;box-shadow:0 28px 70px rgba(0,0,0,.5)}
+.phone video{width:100%;height:100%;object-fit:cover;background:#050608}
+.overlayLogo{position:absolute;z-index:3;top:17px;left:15px;font-size:7px;letter-spacing:.42em;font-weight:800}
+.overlayHook{position:absolute;z-index:3;left:15px;right:15px;bottom:42px;font-family:Georgia,serif;font-size:18px;line-height:1.12;text-shadow:0 1px 16px #000}
+.overlayMeta{position:absolute;z-index:3;left:15px;bottom:20px;font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:#d2d4d7}
+.shot{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;border-left:2px solid var(--gold);background:rgba(255,255,255,.018);border-radius:0 8px 8px 0;padding:8px 9px}
+.shot .n{font-size:9px;color:var(--gold)}.shot b{display:block;font-size:9px}.shot span{font-size:8px;color:var(--muted)}.shot em{font-style:normal;font-size:8px;color:var(--muted)}
+.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}.metric{padding:10px;background:var(--panel2);border:1px solid var(--line);border-radius:10px}.metric span{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.metric b{display:block;font-size:10px;margin-top:4px}
+.notice{font-size:9px;line-height:1.5;color:var(--muted);margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:10px}
+.result{display:none;margin-top:12px}.result video{width:100%;border-radius:14px;background:#000;max-height:560px}.result a{display:block;margin-top:9px;text-decoration:none;text-align:center}
+.error{color:var(--bad)}
+@media(max-width:850px){.app{grid-template-columns:1fr}aside{display:none}main{padding:18px 13px 40px}.grid{grid-template-columns:1fr}.top{align-items:center}h1{font-size:22px}.card{padding:16px}.settings{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+ <div class="logo">ELITE</div><div class="sub">Creator Engine</div>
+ <div class="nav"><div class="active">Cloud Director</div><div>Brand Engine · Active</div><div>Semantic AI · Next</div></div>
+ <div class="version">MVP 1.0<br>Cloud render architecture</div>
+</aside>
+<main>
+<div class="top">
+ <div><h1>ELITE Cloud Director</h1><p>Sequenza narrativa deterministica e rendering MP4 fuori dall’iPhone.</p></div>
+ <div class="pill"><span class="dot"></span>Cloud Render</div>
+</div>
+
+<div class="grid">
+<section class="card">
+ <h2>1. Configurazione render</h2>
+ <p>Inserisci una volta Cloud Name e unsigned upload preset di Cloudinary. Non inserire API Secret.</p>
+ <div class="settings">
+  <label class="field"><span>Cloud name</span><input id="cloudName" placeholder="es. elitecreator"></label>
+  <label class="field"><span>Unsigned upload preset</span><input id="uploadPreset" placeholder="es. elite_unsigned"></label>
+ </div>
+ <button class="btn secondary" id="saveSettings" style="margin-top:9px">Salva configurazione</button>
+
+ <label class="upload" for="files"><div class="plus">＋</div><b>Seleziona le clip</b><small>2–8 video · caricamento diretto sul render cloud</small></label>
+ <input id="files" type="file" accept="video/*" multiple>
+
+ <span class="label">Struttura narrativa</span>
+ <div class="options">
+  <div class="option selected" data-story="Executive Day"><strong>Executive Day</strong><small>Morning → Detail → Business → Performance → Reflection</small></div>
+  <div class="option" data-story="Performance"><strong>Performance</strong><small>Detail → Build → Performance → Recovery → Reflection</small></div>
+ </div>
+
+ <div id="cliplist" class="cliplist"></div>
+ <div class="controls">
+  <button class="btn secondary" id="orderBtn" disabled>Crea sequenza</button>
+  <button class="btn" id="renderBtn" disabled>Carica e genera MP4</button>
+ </div>
+ <div class="progressWrap">
+  <div class="progressRow"><span id="status">In attesa</span><span id="pct">0%</span></div>
+  <div class="bar"><div id="bar"></div></div>
+ </div>
+ <div class="notice">Per questa versione assegni una categoria a ogni clip con un solo tap. È intenzionale: produce una sequenza realmente logica. L’autoclassificazione semantica verrà aggiunta dopo, tramite AI server-side.</div>
+</section>
+
+<section class="card">
+ <h2>2. Director Cut</h2>
+ <p>Nessun ordine casuale: la timeline segue sempre la struttura Élite selezionata.</p>
+
+ <div class="phoneWrap">
+  <div class="phone">
+   <video id="preview" playsinline muted controls></video>
+   <div class="overlayLogo">ELITE</div>
+   <div class="overlayHook" id="hook">Discipline is built before the world wakes up.</div>
+   <div class="overlayMeta">ELITE CLOUD CUT</div>
+  </div>
+ </div>
+
+ <div id="timeline" class="timeline"></div>
+ <div class="metrics">
+  <div class="metric"><span>Grading</span><b>Contrast +22 · Saturation −28 · Vignette</b></div>
+  <div class="metric"><span>Format</span><b>9:16 · 720×1280 · H.264 MP4</b></div>
+  <div class="metric"><span>Sequence</span><b id="sequenceCount">0 clip</b></div>
+  <div class="metric"><span>Rendering</span><b>Cloud, non iPhone</b></div>
+ </div>
+
+ <div id="result" class="result">
+  <video id="finalVideo" controls playsinline></video>
+  <a id="openMp4" class="btn" target="_blank" rel="noopener">Apri MP4 finale</a>
+ </div>
+</section>
+</div>
+</main>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const filesInput=$('#files'),cliplist=$('#cliplist'),timeline=$('#timeline');
+const cloudName=$('#cloudName'),uploadPreset=$('#uploadPreset'),saveSettings=$('#saveSettings');
+const orderBtn=$('#orderBtn'),renderBtn=$('#renderBtn'),preview=$('#preview'),finalVideo=$('#finalVideo');
+const result=$('#result'),openMp4=$('#openMp4'),statusEl=$('#status'),pctEl=$('#pct'),bar=$('#bar');
+const sequenceCount=$('#sequenceCount'),hook=$('#hook');
+let clips=[],sequence=[],story='Executive Day';
+
+const categories=['Morning','Detail','Business','Performance','Lifestyle','Recovery','Reflection'];
+const structures={
+ 'Executive Day':['Morning','Detail','Business','Performance','Lifestyle','Reflection'],
+ 'Performance':['Detail','Business','Performance','Lifestyle','Recovery','Reflection']
+};
+const hooks={
+ 'Executive Day':'Discipline is built before the world wakes up.',
+ 'Performance':'Performance is the result of what you repeat.'
+};
+
+cloudName.value=localStorage.getItem('eliteCloudName')||'';
+uploadPreset.value=localStorage.getItem('eliteUploadPreset')||'';
+
+function setProgress(text,pct,error=false){
+ statusEl.textContent=text;statusEl.classList.toggle('error',error);
+ pctEl.textContent=Math.round(pct)+'%';bar.style.width=pct+'%';
+}
+saveSettings.onclick=()=>{
+ localStorage.setItem('eliteCloudName',cloudName.value.trim());
+ localStorage.setItem('eliteUploadPreset',uploadPreset.value.trim());
+ setProgress('Configurazione salvata',5);
+};
+
+function localClip(file,index){
+ return new Promise(resolve=>{
+  const url=URL.createObjectURL(file),v=document.createElement('video');
+  v.preload='metadata';v.src=url;v.muted=true;v.playsInline=true;
+  v.onloadedmetadata=()=>resolve({
+    id:index,file,url,name:file.name,duration:v.duration||0,
+    category:categories[Math.min(index,categories.length-1)]
+  });
+  v.onerror=()=>resolve({id:index,file,url,name:file.name,duration:0,category:'Detail'});
+ });
+}
+
+filesInput.onchange=async()=>{
+ clips.forEach(c=>URL.revokeObjectURL(c.url));clips=[];sequence=[];timeline.innerHTML='';cliplist.innerHTML='';
+ const selected=[...filesInput.files].slice(0,8);
+ setProgress('Lettura clip…',5);
+ for(let i=0;i<selected.length;i++)clips.push(await localClip(selected[i],i));
+ renderClips();orderBtn.disabled=clips.length<2;renderBtn.disabled=true;
+ setProgress(clips.length+' clip pronte',12);
+ if(clips[0])preview.src=clips[0].url;
+};
+
+function renderClips(){
+ cliplist.innerHTML='';
+ clips.forEach((c,i)=>{
+  const row=document.createElement('div');row.className='clip';
+  const video=document.createElement('video');video.className='thumb';video.src=c.url;video.muted=true;video.playsInline=true;
+  const body=document.createElement('div');
+  const options=categories.map(x=>`<option ${x===c.category?'selected':''}>${x}</option>`).join('');
+  body.innerHTML=`<b>${String(i+1).padStart(2,'0')} · ${c.name}</b><small>${c.duration.toFixed(1)} sec</small><select>${options}</select>`;
+  body.querySelector('select').onchange=e=>{c.category=e.target.value;sequence=[];renderBtn.disabled=true;timeline.innerHTML='';sequenceCount.textContent='0 clip'};
+  row.append(video,body);cliplist.append(row);
+ });
+}
+
+document.querySelectorAll('.option').forEach(o=>o.onclick=()=>{
+ document.querySelectorAll('.option').forEach(x=>x.classList.remove('selected'));o.classList.add('selected');
+ story=o.dataset.story;hook.textContent=hooks[story];sequence=[];timeline.innerHTML='';renderBtn.disabled=true;
+});
+
+function qualityScore(c){
+ let s=0;
+ if(c.duration>=1.2&&c.duration<=8)s+=10;
+ s+=Math.min(5,c.duration/2);
+ return s;
+}
+
+function createSequence(){
+ const rank=structures[story];
+ sequence=[...clips].sort((a,b)=>{
+  const ra=rank.indexOf(a.category),rb=rank.indexOf(b.category);
+  const safeA=ra<0?999:ra,safeB=rb<0?999:rb;
+  if(safeA!==safeB)return safeA-safeB;
+  return qualityScore(b)-qualityScore(a);
+ });
+ renderTimeline();renderBtn.disabled=sequence.length<2;
+ setProgress('Sequenza narrativa pronta',18);
+}
+
+orderBtn.onclick=createSequence;
+
+function renderTimeline(){
+ timeline.innerHTML='';
+ const duration=15/sequence.length;
+ sequence.forEach((c,i)=>{
+  const row=document.createElement('div');row.className='shot';
+  row.innerHTML=`<div class="n">${String(i+1).padStart(2,'0')}</div><div><b>${c.name}</b><span>${c.category}</span></div><em>${duration.toFixed(1)}s</em>`;
+  timeline.append(row);
+ });
+ sequenceCount.textContent=sequence.length+' clip';
+ if(sequence[0])preview.src=sequence[0].url;
+}
+
+async function uploadClip(c,index){
+ const form=new FormData();
+ form.append('file',c.file);
+ form.append('upload_preset',uploadPreset.value.trim());
+ const endpoint=`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName.value.trim())}/video/upload`;
+ const response=await fetch(endpoint,{method:'POST',body:form});
+ if(!response.ok){
+  let msg='Upload fallito';
+  try{const data=await response.json();msg=data.error?.message||msg}catch(e){}
+  throw new Error(msg);
+ }
+ const data=await response.json();
+ c.publicId=data.public_id;c.cloudDuration=data.duration||c.duration;
+ return c;
+}
+
+function layerId(publicId){return publicId.replaceAll('/',':')}
+
+function buildCloudinaryUrl(){
+ const cloud=cloudName.value.trim();
+ const base=sequence[0];
+ const segment=(index)=>index===0?1.3:Math.min(3,15/sequence.length);
+ const grade='e_brightness:-10,e_contrast:22,e_saturation:-28,e_vignette:18';
+ const normalize=(dur)=>`c_fill,g_center,w_720,h_1280,so_0,du_${dur.toFixed(1)},${grade}`;
+ const parts=[normalize(segment(0))];
+
+ for(let i=1;i<sequence.length;i++){
+  const id=layerId(sequence[i].publicId);
+  parts.push(`l_video:${id}`);
+  parts.push(normalize(segment(i)));
+  parts.push('fl_splice,fl_layer_apply');
+ }
+ parts.push('q_auto:good,vc_h264');
+ return `https://res.cloudinary.com/${encodeURIComponent(cloud)}/video/upload/${parts.join('/')}/${base.publicId}.mp4`;
+}
+
+renderBtn.onclick=async()=>{
+ if(!sequence.length)createSequence();
+ if(!cloudName.value.trim()||!uploadPreset.value.trim()){
+  setProgress('Inserisci Cloud Name e upload preset',0,true);return;
+ }
+ renderBtn.disabled=true;orderBtn.disabled=true;result.style.display='none';
+ try{
+  for(let i=0;i<sequence.length;i++){
+   setProgress(`Upload cloud ${i+1}/${sequence.length}`,20+45*(i/sequence.length));
+   await uploadClip(sequence[i],i);
+  }
+  setProgress('Composizione MP4 sul cloud…',72);
+  const url=buildCloudinaryUrl();
+  finalVideo.src=url;openMp4.href=url;result.style.display='block';
+  finalVideo.onloadedmetadata=()=>setProgress('MP4 Élite pronto',100);
+  finalVideo.onerror=()=>setProgress('Cloudinary sta ancora elaborando: premi “Apri MP4 finale” tra qualche secondo',88);
+  finalVideo.load();
+ }catch(err){
+  setProgress(err.message||'Errore durante la generazione',0,true);
+ }finally{
+  renderBtn.disabled=false;orderBtn.disabled=false;
+ }
+};
+</script>
+</body>
+</html>
