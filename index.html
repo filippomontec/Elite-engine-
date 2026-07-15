@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08090b">
+<title>Elite Creator Engine v1</title>
+<style>
+:root{
+ --bg:#08090b;--panel:#111319;--panel2:#181b21;--line:#2b3038;
+ --text:#f4f2ed;--muted:#9298a2;--gold:#d6bc88;--ok:#98b398
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 100% 0,rgba(214,188,136,.1),transparent 28%),var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input{font:inherit}
+.app{min-height:100vh;display:grid;grid-template-columns:220px 1fr}
+aside{padding:26px 20px;border-right:1px solid var(--line);background:#07080a;position:relative}
+.logo{font-size:14px;letter-spacing:.44em;font-weight:800}
+.sub{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:7px}
+.nav{margin-top:38px}
+.nav div{padding:12px;border-radius:11px;color:var(--muted);font-size:12px;margin-bottom:8px}
+.nav .active{background:var(--panel2);border:1px solid var(--line);color:var(--text)}
+.version{position:absolute;bottom:22px;font-size:9px;color:#626873;line-height:1.5}
+main{padding:28px 30px 50px;max-width:1540px;width:100%;margin:auto}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:22px}
+h1{font-size:27px;letter-spacing:-.035em;margin:0}
+.top p{margin:7px 0 0;color:var(--muted);font-size:12px}
+.pill{font-size:10px;color:var(--muted);border:1px solid var(--line);padding:8px 11px;border-radius:999px;white-space:nowrap}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px}
+.grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(380px,.95fr);gap:18px}
+.card{border:1px solid var(--line);border-radius:19px;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.008));padding:19px}
+.card h2{font-size:14px;margin:0 0 5px}
+.card p{font-size:11px;line-height:1.5;color:var(--muted);margin:0}
+.label{display:block;margin:17px 0 8px;color:#c9ccd1;font-size:9px;letter-spacing:.12em;text-transform:uppercase}
+.upload{border:1px dashed #434a55;border-radius:16px;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin-top:14px;cursor:pointer;background:rgba(255,255,255,.012)}
+.upload .plus{font-size:30px;margin-bottom:6px}
+.upload b{font-size:12px}
+.upload small{font-size:9px;color:var(--muted);margin-top:6px}
+input[type=file]{display:none}
+.btn{border:0;border-radius:12px;padding:13px;background:var(--gold);color:#17130d;font-weight:800;font-size:12px;cursor:pointer;width:100%}
+.btn.secondary{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn:disabled{opacity:.4}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.cliplist{display:grid;gap:10px;margin-top:14px;max-height:520px;overflow:auto}
+.clip-card{border:1px solid var(--line);background:var(--panel2);border-radius:14px;padding:10px}
+.clip-head{display:grid;grid-template-columns:58px 1fr;gap:10px;align-items:center}
+.thumb{width:58px;height:76px;border-radius:8px;object-fit:cover;background:#222}
+.clip-card b{font-size:10px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clip-card small{font-size:8px;color:var(--muted);display:block;margin-top:4px}
+.preset-row{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+.preset-btn{border:1px solid var(--line);border-radius:10px;background:#101217;color:var(--muted);padding:9px 6px;font-size:9px;cursor:pointer}
+.preset-btn.active{border-color:var(--gold);color:var(--text);background:rgba(214,188,136,.07)}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.compare h3{font-size:10px;margin:0 0 7px;color:#d8d3ca}
+.phone{width:100%;aspect-ratio:9/16;border-radius:22px;border:1px solid #454b55;background:#050608;overflow:hidden;position:relative}
+.phone video{width:100%;height:100%;object-fit:cover;background:#050608}
+.elite-video{filter:brightness(var(--b,1)) contrast(var(--c,1)) saturate(var(--s,1)) sepia(var(--sep,0)) hue-rotate(var(--h,0deg))}
+.grade{position:absolute;inset:0;pointer-events:none;background:
+ linear-gradient(180deg,rgba(255,242,222,var(--hi,.04)) 0%,transparent 35%),
+ linear-gradient(180deg,transparent 45%,rgba(0,0,0,var(--sh,.18)) 100%),
+ radial-gradient(circle at center,transparent 45%,rgba(0,0,0,var(--vig,.12)) 100%)}
+.overlayLogo{position:absolute;z-index:3;top:15px;left:14px;font-size:7px;letter-spacing:.42em;font-weight:800}
+.overlayMeta{position:absolute;z-index:3;left:14px;bottom:18px;font-size:7px;letter-spacing:.1em;color:#d2d4d7;text-transform:uppercase}
+.preview-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.timeline{display:grid;gap:8px;margin-top:14px}
+.shot{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;border-left:2px solid var(--gold);background:rgba(255,255,255,.018);border-radius:0 8px 8px 0;padding:8px 9px}
+.shot .n{font-size:9px;color:var(--gold)}
+.shot b{font-size:9px}
+.shot span{font-size:8px;color:var(--muted)}
+.shot em{font-style:normal;font-size:8px;color:var(--muted)}
+.main-preview{display:flex;justify-content:center;margin-top:14px}
+.main-preview .phone{width:min(280px,78vw)}
+.status{margin-top:14px;border-top:1px solid var(--line);padding-top:13px}
+.statusRow{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-bottom:7px}
+.bar{height:5px;background:#242830;border-radius:99px;overflow:hidden}
+.bar>div{height:100%;width:0;background:var(--gold);transition:width .25s}
+.notice{font-size:9px;line-height:1.5;color:var(--muted);margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:10px}
+@media(max-width:980px){
+ .app{grid-template-columns:1fr}
+ aside{display:none}
+ main{padding:18px 13px 40px}
+ .grid{grid-template-columns:1fr}
+ .top{align-items:center}
+ h1{font-size:22px}
+ .card{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+ <div class="logo">ELITE</div>
+ <div class="sub">Creator Engine</div>
+ <div class="nav">
+  <div class="active">Preset Engine</div>
+  <div>Story Builder</div>
+  <div>Export · Later</div>
+ </div>
+ <div class="version">MVP v1<br>Original vs Élite</div>
+</aside>
+
+<main>
+<div class="top">
+ <div>
+  <h1>Elite Creator Engine v1</h1>
+  <p>Carica le clip, assegna un preset e confronta subito Originale vs Élite.</p>
+ </div>
+ <div class="pill"><span class="dot"></span>Master Grade active</div>
+</div>
+
+<div class="grid">
+<section class="card">
+ <h2>1. Media + Preset Engine</h2>
+ <p>Ogni clip mantiene lo stesso Master Grade e riceve un modifier specifico.</p>
+
+ <label class="upload" for="files">
+  <div class="plus">＋</div>
+  <b>Carica le clip del Reel</b>
+  <small>2–8 video · nessun export in questa fase</small>
+ </label>
+ <input id="files" type="file" accept="video/*" multiple>
+
+ <div id="cliplist" class="cliplist"></div>
+
+ <div class="controls">
+  <button class="btn secondary" id="buildBtn" disabled>Crea sequenza</button>
+  <button class="btn" id="playReelBtn" disabled>Play Reel Preview</button>
+ </div>
+
+ <div class="status">
+  <div class="statusRow"><span id="statusText">In attesa delle clip</span><span id="pct">0%</span></div>
+  <div class="bar"><div id="bar"></div></div>
+ </div>
+
+ <div class="notice">
+  Preset disponibili: Coffee Ritual, Executive, Automotive, Luxury Detail, Performance e Reflection. Tutti condividono lo stesso Master Grade Élite.
+ </div>
+</section>
+
+<section class="card">
+ <h2>2. Compare + Reel Preview</h2>
+ <p>Seleziona una clip nella colonna a sinistra per confrontare il suo preset con l’originale.</p>
+
+ <div class="compare">
+  <div>
+   <h3>Originale</h3>
+   <div class="phone"><video id="originalVideo" playsinline muted controls></video></div>
+  </div>
+  <div>
+   <h3>Preset Élite</h3>
+   <div class="phone" id="elitePhone">
+    <video id="eliteVideo" class="elite-video" playsinline muted controls></video>
+    <div class="grade"></div>
+    <div class="overlayLogo">ELITE</div>
+    <div class="overlayMeta" id="presetLabel">MASTER GRADE</div>
+   </div>
+  </div>
+ </div>
+
+ <div class="preview-controls">
+  <button class="btn secondary" id="syncPlay">Play sincronizzato</button>
+  <button class="btn secondary" id="syncPause">Pause</button>
+ </div>
+
+ <span class="label">Reel sequence</span>
+ <div id="timeline" class="timeline"></div>
+
+ <div class="main-preview">
+  <div class="phone" id="reelPhone">
+   <video id="reelVideo" class="elite-video" playsinline muted></video>
+   <div class="grade"></div>
+   <div class="overlayLogo">ELITE</div>
+   <div class="overlayMeta" id="reelMeta">DIRECTOR PREVIEW</div>
+  </div>
+ </div>
+</section>
+</div>
+</main>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const filesInput = $('#files');
+const cliplist = $('#cliplist');
+const buildBtn = $('#buildBtn');
+const playReelBtn = $('#playReelBtn');
+const originalVideo = $('#originalVideo');
+const eliteVideo = $('#eliteVideo');
+const reelVideo = $('#reelVideo');
+const elitePhone = $('#elitePhone');
+const reelPhone = $('#reelPhone');
+const presetLabel = $('#presetLabel');
+const reelMeta = $('#reelMeta');
+const timeline = $('#timeline');
+const syncPlay = $('#syncPlay');
+const syncPause = $('#syncPause');
+const statusText = $('#statusText');
+const pct = $('#pct');
+const bar = $('#bar');
+
+let clips = [];
+let sequence = [];
+let selectedClip = null;
+let stopReel = false;
+
+const presetNames = ['Coffee Ritual','Executive','Automotive','Luxury Detail','Performance','Reflection'];
+
+const master = {
+  exposure: 1.03,
+  contrast: 1.12,
+  saturation: .88,
+  sepia: .02,
+  hue: '-1deg',
+  highlights: .03,
+  shadows: .14,
+  vignette: .10
+};
+
+const modifiers = {
+  'Coffee Ritual': {exposure:1.04, contrast:1.10, saturation:.92, sepia:.08, hue:'-5deg', highlights:.05, shadows:.12, vignette:.10},
+  'Executive': {exposure:1.03, contrast:1.12, saturation:.90, sepia:.01, hue:'0deg', highlights:.03, shadows:.12, vignette:.08},
+  'Automotive': {exposure:.98, contrast:1.22, saturation:.78, sepia:.01, hue:'3deg', highlights:.02, shadows:.22, vignette:.16},
+  'Luxury Detail': {exposure:1.02, contrast:1.16, saturation:.86, sepia:.05, hue:'-3deg', highlights:.04, shadows:.15, vignette:.13},
+  'Performance': {exposure:.96, contrast:1.25, saturation:.72, sepia:0, hue:'4deg', highlights:.01, shadows:.24, vignette:.18},
+  'Reflection': {exposure:1.00, contrast:1.08, saturation:.82, sepia:.03, hue:'-2deg', highlights:.02, shadows:.18, vignette:.14}
+};
+
+function combinedLook(preset){
+  const m = modifiers[preset] || modifiers.Executive;
+  return {
+    b: ((master.exposure + m.exposure)/2).toFixed(2),
+    c: ((master.contrast + m.contrast)/2).toFixed(2),
+    s: ((master.saturation + m.saturation)/2).toFixed(2),
+    sep: ((master.sepia + m.sepia)/2).toFixed(2),
+    h: m.hue,
+    hi: ((master.highlights + m.highlights)/2).toFixed(2),
+    sh: ((master.shadows + m.shadows)/2).toFixed(2),
+    vig: ((master.vignette + m.vignette)/2).toFixed(2)
+  };
+}
+
+function applyLook(container,preset){
+  const l = combinedLook(preset);
+  container.style.setProperty('--b',l.b);
+  container.style.setProperty('--c',l.c);
+  container.style.setProperty('--s',l.s);
+  container.style.setProperty('--sep',l.sep);
+  container.style.setProperty('--h',l.h);
+  container.style.setProperty('--hi',l.hi);
+  container.style.setProperty('--sh',l.sh);
+  container.style.setProperty('--vig',l.vig);
+}
+
+function setStatus(text,percent){
+  statusText.textContent = text;
+  pct.textContent = Math.round(percent)+'%';
+  bar.style.width = percent+'%';
+}
+
+function clipMeta(file,index){
+  return new Promise(resolve=>{
+    const url = URL.createObjectURL(file);
+    const v = document.createElement('video');
+    v.src = url;
+    v.preload = 'metadata';
+    v.muted = true;
+    v.playsInline = true;
+    v.onloadedmetadata = ()=>resolve({
+      id:index, file, url, name:file.name, duration:v.duration||0,
+      preset:presetNames[Math.min(index,presetNames.length-1)]
+    });
+    v.onerror = ()=>resolve({
+      id:index, file, url, name:file.name, duration:0, preset:'Executive'
+    });
+  });
+}
+
+filesInput.onchange = async ()=>{
+  clips.forEach(c=>URL.revokeObjectURL(c.url));
+  clips = [];
+  sequence = [];
+  cliplist.innerHTML = '';
+  timeline.innerHTML = '';
+  setStatus('Lettura clip…',5);
+  const selected = [...filesInput.files].slice(0,8);
+  for(let i=0;i<selected.length;i++) clips.push(await clipMeta(selected[i],i));
+  renderClips();
+  buildBtn.disabled = clips.length < 2;
+  playReelBtn.disabled = true;
+  if(clips[0]) selectClip(clips[0]);
+  setStatus(clips.length+' clip caricate',18);
+};
+
+function renderClips(){
+  cliplist.innerHTML = '';
+  clips.forEach((clip,i)=>{
+    const card = document.createElement('div');
+    card.className = 'clip-card';
+
+    const head = document.createElement('div');
+    head.className = 'clip-head';
+
+    const thumb = document.createElement('video');
+    thumb.className = 'thumb';
+    thumb.src = clip.url;
+    thumb.muted = true;
+    thumb.playsInline = true;
+
+    const info = document.createElement('div');
+    info.innerHTML = `<b>${String(i+1).padStart(2,'0')} · ${clip.name}</b><small>${clip.duration.toFixed(1)} sec · ${clip.preset}</small>`;
+
+    head.append(thumb,info);
+
+    const row = document.createElement('div');
+    row.className = 'preset-row';
+
+    presetNames.forEach(name=>{
+      const btn = document.createElement('button');
+      btn.className = 'preset-btn'+(clip.preset===name?' active':'');
+      btn.textContent = name;
+      btn.onclick = e=>{
+        e.stopPropagation();
+        clip.preset = name;
+        renderClips();
+        selectClip(clip);
+      };
+      row.append(btn);
+    });
+
+    card.onclick = ()=>selectClip(clip);
+    card.append(head,row);
+    cliplist.append(card);
+  });
+}
+
+function selectClip(clip){
+  selectedClip = clip;
+  originalVideo.src = clip.url;
+  eliteVideo.src = clip.url;
+  applyLook(elitePhone,clip.preset);
+  presetLabel.textContent = clip.preset.toUpperCase();
+}
+
+syncPlay.onclick = async ()=>{
+  if(!selectedClip) return;
+  const t = Math.min((selectedClip.duration||1)*.18,Math.max(0,(selectedClip.duration||1)-.2));
+  originalVideo.currentTime = t;
+  eliteVideo.currentTime = t;
+  try{
+    await originalVideo.play();
+    await eliteVideo.play();
+  }catch(e){}
+};
+
+syncPause.onclick = ()=>{
+  originalVideo.pause();
+  eliteVideo.pause();
+};
+
+function createSequence(){
+  sequence = [...clips];
+  renderTimeline();
+  playReelBtn.disabled = sequence.length < 2;
+  setStatus('Sequenza pronta',30);
+}
+
+function renderTimeline(){
+  timeline.innerHTML = '';
+  const seg = 15/sequence.length;
+  sequence.forEach((clip,i)=>{
+    const row = document.createElement('div');
+    row.className = 'shot';
+    row.innerHTML = `
+      <div class="n">${String(i+1).padStart(2,'0')}</div>
+      <div><b>${clip.name}</b><span>${clip.preset}</span></div>
+      <em>${seg.toFixed(1)}s</em>
+    `;
+    timeline.append(row);
+  });
+}
+
+buildBtn.onclick = createSequence;
+
+function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+async function playReel(){
+  if(!sequence.length) return;
+  stopReel = false;
+  playReelBtn.textContent = 'Stop Reel';
+  const seg = Math.max(1.2,15/sequence.length);
+
+  for(let i=0;i<sequence.length && !stopReel;i++){
+    const clip = sequence[i];
+    reelVideo.src = clip.url;
+    applyLook(reelPhone,clip.preset);
+    reelMeta.textContent = clip.preset.toUpperCase();
+
+    reelVideo.currentTime = Math.min((clip.duration||1)*.18,Math.max(0,(clip.duration||1)-.2));
+    try{ await reelVideo.play(); }catch(e){}
+
+    setStatus('Reel preview '+(i+1)+'/'+sequence.length+' · '+clip.preset,35+60*((i+1)/sequence.length));
+    await wait(Math.min(seg,Math.max(.9,clip.duration||seg))*1000);
+    reelVideo.pause();
+  }
+
+  playReelBtn.textContent = 'Play Reel Preview';
+  setStatus(stopReel?'Preview interrotta':'Preview completata',stopReel?30:100);
+}
+
+playReelBtn.onclick = ()=>{
+  if(playReelBtn.textContent==='Stop Reel'){
+    stopReel = true;
+    reelVideo.pause();
+  }else{
+    playReel();
+  }
+};
+</script>
+</body>
+</html>
